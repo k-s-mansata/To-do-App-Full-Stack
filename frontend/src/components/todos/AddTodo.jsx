@@ -2,6 +2,9 @@ import React from 'react';
 import { TextField, Button } from '@material-ui/core';
 import {Send} from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import { Dispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { addTodo, updateTodo } from '../../store/actions/todoActions';
 
 const useStyles = makeStyles({
     formStyle : {
@@ -17,13 +20,40 @@ const useStyles = makeStyles({
     }
 });
 
-const AddTodo = () => {
+const AddTodo = ({todo, setTodo}) => {
     const classes = useStyles();
+    const dispatch = useDispatch();
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if(todo._id) {
+            const id = todo._id;
+            const updatedTodo = {
+                name : todo.name,
+                isComplete : todo.isComplete,
+                date : todo.date,
+                author : "Krupal"
+            }
+            dispatch(updateTodo(updatedTodo, id));
+        }else {
+            const newTodo = {
+                ...todo,
+                date: new Date() 
+            }
+            //, date: new Date()
+            dispatch(addTodo(newTodo));
+        }
+        
+        setTodo({
+            name : "",
+            isComplete : false
+        });
+    }
 
     return ( 
         <>
-        <form noValidate autoComplete = "off" className = {classes.formStyle}>
-            <TextField id="enter-todo" label = "Enter Todo"  variant = "outlined" autoFocus fullWidth/>
+        <form noValidate autoComplete = "off" className = {classes.formStyle} onSubmit = {handleSubmit}>
+            <TextField id="enter-todo" label = "Enter Todo"  variant = "outlined" autoFocus fullWidth  value = {todo.name} onChange = {(e) => setTodo({...todo, name : e.target.value})}/>
             <Button className = {classes.submitButton} color = "primary" variant = "contained" type = "submit">
                 <Send />
             </Button>

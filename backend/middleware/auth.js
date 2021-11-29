@@ -2,10 +2,11 @@ const jwt = require("jsonwebtoken");
 
 function auth(req, res, next) {
     const token = req.header("x-auth-token");
-    if(!token) {
-        return res.status(401).send('Unauthorized');
-    }
 
+    if(token == 'null') {
+        return res.status(401).send('Unauthorized Request.');
+    }
+    
     try {
         let secretKey = process.env.SECRET_KEY;
         let payload = jwt.verify(token, secretKey);

@@ -10,7 +10,9 @@ const router = express.Router();
 router.get("/", auth, async(req, res) => {
     try
     {
-        const todos = await Todo.find()
+        const todos = await Todo.find({
+            uid : req.user._id
+        })
         .sort({
             date : -1
         });
@@ -85,6 +87,8 @@ router.put("/:id", auth, async(req, res) => {
 
         if(!findTodo) return res.status(404).send("Todo not found");
 
+        if(findTodo.uid != req.user._id) return res.status(401).send("Bad Request");
+
         const {name, author, isComplete, date, uid} = req.body;
         const updatedTodo = await Todo.findByIdAndUpdate(req.params.id, {name, author, isComplete, date, uid}, {
             new : true
@@ -105,7 +109,10 @@ router.patch("/:id", auth, async(req, res) => {
 
         if(!findTodo) return res.status(404).send("Todo not found");
 
-        const updatedTodo = await Todo.findByIdAndUpdate(req.params.id, {isComplete : !findTodo.isComplete});
+        if(findTodo.uid != req.user._id) return res.status(401).send("Bad Request");
+
+        const updatedTodo = await Todo.findByIdAndUpdate(req.params.id, {isComplete : !findTodo.isComplete} , {
+            new : true});
         res.send(updatedTodo);
     }
     catch (error) {
@@ -151,6 +158,8 @@ router.delete("/:id", auth, async(req, res) => {
         const findTodo = await Todo.findById(req.params.id);
 
         if(!findTodo) return res.status(404).send("Todo not found");
+
+        if(findTodo.uid != req.user._id) return res.status(401).send("Bad Request");
 
         const deletedTodo = await Todo.findByIdAndDelete(req.params.id);
         res.send(deletedTodo);

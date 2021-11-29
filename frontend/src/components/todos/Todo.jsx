@@ -1,7 +1,12 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Typography, Button, ButtonGroup } from '@material-ui/core';
 import { Create, Delete, CheckCircle } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core';
+import moment from 'moment';
+import { useDispatch } from 'react-redux';
+
+import { checkTodo, deleteTodo } from '../../store/actions/todoActions';
 
 const useStyle = makeStyles({
     todoStyle : {
@@ -14,34 +19,72 @@ const useStyle = makeStyles({
     },
     grayStyle : {
         color : "#8f8f8f"
+    },
+    isComplete : {
+        color : "green",
+    },
+    checked : {
+        textDecoration : "line-through"
     }
 });
 
-const Todo = () => {
+const Todo = ({todo, setTodo}) => {
     const classes = useStyle();
+    const dispatch = useDispatch();
+    const handleUpdateClick = () => {
+        setTodo(todo)
+        window.scrollTo({
+            top : 0,
+            left : 0,
+            behavior : "smooth"
+        });
+    };
+
+    const handleCheck = (id) => {
+        dispatch(checkTodo(id));
+    };
+
+    const handledeleteTodo = (id, name) => {
+        if(window.confirm(`Are you sure you want to Delete "${name}"`)){
+            dispatch(deleteTodo(id));
+        }
+    };
+
+    const auth = useSelector(state => state.auth);
 
     return ( 
+
         <div className = {classes.todoStyle }>
             <div>
-                <Typography variant = "subtitle1">
-                    Learn React
+                {todo.isComplete ? 
+                (<Typography variant = "subtitle1" className = {classes.checked}>
+                    {todo.name}
+                </Typography>) : 
+                (<Typography variant = "subtitle1">
+                    {todo.name}
+                </Typography>)
+                }
+                <Typography className = {classes.grayStyle} variant = "body2">
+                    Author : {auth.name}
                 </Typography>
                 <Typography className = {classes.grayStyle} variant = "body2">
-                    Author : Krupal
-                </Typography>
-                <Typography className = {classes.grayStyle} variant = "body2">
-                    Added : 4 days Ago
+                    Added : {moment(todo.date).fromNow()}
                 </Typography>
             </div>
             <div>
                 <ButtonGroup size = "small" aria-label = "outlined primary button group">
-                    <Button>
-                        <CheckCircle color = "action"/>
+                    <Button onClick = {() => handleCheck(todo._id)}>
+                        {todo.isComplete ? (
+                            <CheckCircle color = "action" className = {classes.isComplete}/>
+                            ) : (
+                                <CheckCircle color = "action"/>
+                            ) 
+                        }
                     </Button>
-                    <Button>
+                    <Button onClick = {() => handleUpdateClick()}>
                         <Create color = "primary"/>
                     </Button>
-                    <Button>
+                    <Button onClick = {() => handledeleteTodo(todo._id, todo.name)}> 
                         <Delete color = "secondary"/>
                     </Button>
                 </ButtonGroup>
